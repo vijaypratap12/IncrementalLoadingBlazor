@@ -1,0 +1,33 @@
+﻿@inject IJSRuntime jsRuntime
+@ChildContent
+
+<h3>Incremental Loading</h3>
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent{ get; set; }
+
+    [Parameter]
+    public string ObserverTargetId{ get; set; }
+    [Parameter]
+    public EventCallback<bool> ObservableTargetReached{ get; set; }
+    private DotNetObjectReference<IncrementalLoading> objectRef{ get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objectRef = DotNetObjectReference.Create(this);
+            var initResult = await jsRuntime.InvokeAsync<dynamic>("Observer.Initialize", objectRef, ObserverTargetId);
+        }
+        //return base.OnAfterRenderAsync(firstRender);
+    }
+
+    [JSInvokable]
+    public async Task OnIntersection()
+    {
+        await ObservableTargetReached.InvokeAsync(true);
+    }
+
+
+}

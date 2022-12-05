@@ -1,0 +1,35 @@
+﻿@page "/"
+
+@using IncrementalLoadingDemo.Data
+@inject WeatherForecastService ForecastService
+
+
+@if (forecast == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <IncrementalLoading ObserverTargetId="observerTarget" ObservableTargetReached="(e)=>FetchForecasts()">
+        <ul>
+            @foreach(var item in forecast)
+            {
+                <li class="list-group-item">@item.Date: @item.TemperatureC-@item.TemperatureF (@item.Summary)</li>
+            }
+            <li class="list-group-item" id="observerTarget"></li>
+        </ul>
+    </IncrementalLoading>
+}
+
+@code{
+    public List<WeatherForecast> forecast = new List<WeatherForecast>();
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchForecasts();
+    }
+    private async Task FetchForecasts()
+    {
+        var fetchedforecast = await ForecastService.GetForecastAsync(DateTime.Now, take:20);
+        forecast.AddRange(fetchedforecast);
+    }
+}
